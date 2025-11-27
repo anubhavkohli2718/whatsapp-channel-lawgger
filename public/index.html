@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Web API - Baileys</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.ready {
+            background: #28a745;
+            animation: none;
+        }
+
+        .status-indicator.connecting {
+            background: #ffc107;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .panel h2 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.3em;
+        }
+
+        .qr-container {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .qr-container img {
+            max-width: 100%;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #25D366;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .messages-container {
+            max-height: 400px;
+            overflow-y: auto;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #25D366;
+            background: #f8f9fa;
+        }
+
+        .message.from-me {
+            border-left-color: #667eea;
+            background: #e7f3ff;
+        }
+
+        .message-header {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .message-body {
+            color: #555;
+            word-wrap: break-word;
+        }
+
+        .message-time {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+            color: #333;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 WhatsApp Web API - Baileys</h1>
+            <p>Reliable WhatsApp integration powered by Baileys</p>
+        </div>
+
+        <div class="status">
+            <div class="status-indicator" id="statusIndicator"></div>
+            <span id="statusText">Connecting...</span>
+        </div>
+
+        <div class="content">
+            <div class="panel">
+                <h2>🔐 Authentication</h2>
+                <div id="qrContainer" class="qr-container">
+                    <p>Waiting for QR code...</p>
+                </div>
+                <div id="infoBox" class="info-box" style="display: none;">
+                    <p><strong>Connected as:</strong> <span id="userName"></span></p>
+                    <p><strong>Phone Number:</strong> <span id="phoneNumber"></span></p>
+                    <p><strong>Platform:</strong> <span id="platform"></span></p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>💬 Send Message</h2>
+                <form id="messageForm">
+                    <div class="form-group">
+                        <label for="phoneNumberInput">Phone Number (with country code, e.g., 1234567890)</label>
+                        <input type="text" id="phoneNumberInput" placeholder="1234567890" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="messageInput">Message</label>
+                        <textarea id="messageInput" placeholder="Type your message here..." required></textarea>
+                    </div>
+                    <button type="submit" id="sendButton" disabled>Send Message</button>
+                </form>
+                <div id="errorContainer"></div>
+            </div>
+        </div>
+
+        <div class="panel" style="margin: 20px;">
+            <h2>📨 Received Messages</h2>
+            <div class="messages-container" id="messagesContainer">
+                <p style="text-align: center; color: #999;">No messages yet...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        const qrContainer = document.getElementById('qrContainer');
+        const infoBox = document.getElementById('infoBox');
+        const userName = document.getElementById('userName');
+        const phoneNumber = document.getElementById('phoneNumber');
+        const platform = document.getElementById('platform');
+        const sendButton = document.getElementById('sendButton');
+        const messageForm = document.getElementById('messageForm');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const errorContainer = document.getElementById('errorContainer');
+
+        socket.on('qr', (qrImage) => {
+            qrContainer.innerHTML = `<img src="${qrImage}" alt="QR Code">`;
+            statusText.textContent = 'Scan QR code with WhatsApp';
+            statusIndicator.className = 'status-indicator';
+        });
+
+        socket.on('connecting', () => {
+            statusIndicator.className = 'status-indicator connecting';
+            statusText.textContent = 'Connecting...';
+        });
+
+        socket.on('ready', (info) => {
+            statusIndicator.classList.add('ready');
+            statusIndicator.classList.remove('connecting');
+            statusText.textContent = 'Ready';
+            sendButton.disabled = false;
+            infoBox.style.display = 'block';
+            userName.textContent = info.pushname || 'Unknown';
+            phoneNumber.textContent = info.wid || 'Unknown';
+            platform.textContent = info.platform || 'Baileys';
+            qrContainer.style.display = 'none';
+        });
+
+        socket.on('disconnected', (reason) => {
+            statusIndicator.classList.remove('ready', 'connecting');
+            statusText.textContent = 'Disconnected: ' + (reason || 'Connection lost');
+            sendButton.disabled = true;
+            showError('Disconnected: ' + (reason || 'Connection lost'));
+        });
+
+        socket.on('message', (msg) => {
+            addMessage(msg);
+        });
+
+        socket.on('message_sent', (data) => {
+            if (data.success) {
+                showError('Message sent successfully!', 'success');
+            }
+        });
+
+        socket.on('error', (error) => {
+            showError(error);
+        });
+
+        messageForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const number = document.getElementById('phoneNumberInput').value;
+            const message = document.getElementById('messageInput').value;
+            
+            socket.emit('send_message', { number, message });
+            document.getElementById('messageInput').value = '';
+        });
+
+        function addMessage(msg) {
+            if (messagesContainer.querySelector('p:first-child')?.textContent === 'No messages yet...') {
+                messagesContainer.innerHTML = '';
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message' + (msg.fromMe ? ' from-me' : '');
+            
+            const time = new Date(msg.timestamp * 1000).toLocaleString();
+            const from = msg.fromMe ? 'You' : (msg.from?.split('@')[0] || 'Unknown');
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">${from}</div>
+                <div class="message-body">${escapeHtml(msg.body || '[Media]')}</div>
+                <div class="message-time">${time}</div>
+            `;
+            
+            messagesContainer.insertBefore(messageDiv, messagesContainer.firstChild);
+        }
+
+        function showError(message, type = 'error') {
+            errorContainer.innerHTML = `<div class="${type === 'success' ? 'success' : 'error'}">${escapeHtml(message)}</div>`;
+            setTimeout(() => {
+                errorContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
+
