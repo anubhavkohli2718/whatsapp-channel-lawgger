@@ -18,6 +18,12 @@ let connectionStatus = 'disconnected';
 let clientInfo = null;
 let messageQueue = []; // Store incoming messages
 
+// Ensure auth directory exists (important for Railway)
+const authDir = path.join(__dirname, 'auth_info_baileys');
+if (!fs.existsSync(authDir)) {
+    fs.mkdirSync(authDir, { recursive: true });
+}
+
 // Initialize Baileys
 async function startBaileys() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
@@ -107,6 +113,17 @@ async function startBaileys() {
 }
 
 // API Routes
+
+// Root endpoint
+app.get('/', (req, res) => {
+    res.json({
+        message: 'WhatsApp API Server',
+        version: '1.0.0',
+        endpoints: '/api',
+        health: '/api/health',
+        status: '/api/status'
+    });
+});
 
 // Get connection status
 app.get('/api/status', (req, res) => {
@@ -250,12 +267,14 @@ app.post('/api/logout', async (req, res) => {
     }
 });
 
-// Health check
+// Health check (Railway needs this)
 app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
         timestamp: new Date().toISOString(),
-        connection: connectionStatus
+        connection: connectionStatus,
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development'
     });
 });
 
@@ -263,10 +282,15 @@ app.get('/api/health', (req, res) => {
 startBaileys().catch(console.error);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`\n✅ WhatsApp API Server running on http://localhost:${PORT}`);
-    console.log(`📱 API endpoints available at http://localhost:${PORT}/api\n`);
+const HOST = process.env.HOST || '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
+    console.log(`\n✅ WhatsApp API Server running on http://${HOST}:${PORT}`);
+    console.log(`📱 API endpoints available at http://${HOST}:${PORT}/api\n`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`💾 Auth directory: ${authDir}\n`);
     console.log('Available endpoints:');
+    console.log('  GET  /                    - Root endpoint');
     console.log('  GET  /api/status          - Get connection status');
     console.log('  GET  /api/qr              - Get QR code for authentication');
     console.log('  POST /api/send            - Send text message');
@@ -277,4 +301,3 @@ app.listen(PORT, () => {
     console.log('  POST /api/logout          - Logout and clear session');
     console.log('  GET  /api/health          - Health check\n');
 });
-
