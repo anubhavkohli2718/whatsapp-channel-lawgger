@@ -2,6 +2,10 @@
   "name": "whatsapp-web-api",
   "version": "1.0.0",
   "main": "index.js",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "start": "node api-server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
