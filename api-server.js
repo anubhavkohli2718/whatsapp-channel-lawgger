@@ -1,11 +1,16 @@
-const makeWASocket = require('@whiskeysockets/baileys').default;
-const { useMultiFileAuthState } = require('@whiskeysockets/baileys');
-const express = require('express');
-const cors = require('cors');
-const qrcode = require('qrcode');
-const pino = require('pino');
-const fs = require('fs');
-const path = require('path');
+import makeWASocket from '@whiskeysockets/baileys';
+import { useMultiFileAuthState } from '@whiskeysockets/baileys';
+import express from 'express';
+import cors from 'cors';
+import qrcode from 'qrcode';
+import pino from 'pino';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 app.use(cors());
